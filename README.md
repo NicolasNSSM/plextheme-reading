@@ -1,3 +1,7 @@
+This is a clone of [starcrouz's plextheme reading](https://github.com/starcrouz/plextheme-reading) ready to be used with [linuxserver's Ubooquity Docker image](https://hub.docker.com/r/linuxserver/ubooquity).\
+With the genuine one you can't use new features as Ubooquity is served with a "ubooquity" folder in the URL. This clone just adds it everywhere it is needed.
+
+
 # Ubooquity enhanced Plex based theme with all currently reading comics list and more
 
 

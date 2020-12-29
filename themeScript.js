@@ -3506,7 +3506,7 @@ Reading.mark = [];
     script.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js';
     script.type = 'text/javascript';
     document.getElementsByTagName("head")[0].appendChild(script);
-	
+
     // Poll for jQuery to come into existance
     var checkReady = function(callback) {
         if (window.jQuery) {
@@ -3516,7 +3516,7 @@ Reading.mark = [];
             window.setTimeout(function() { checkReady(callback); }, 20);
         }
     };
-	
+
 	function timeDistance(date1, date2) {
 		let distance = Math.abs(date1 - date2);
 		const hours = Math.floor(distance / 3600000);
@@ -3530,9 +3530,9 @@ Reading.mark = [];
 		if(hours < 5) return `${hours}h ${minutes}mn`;
 		return `${hours}h`;
 	}
-	
+
 	function getComicsPage(start,comics_per_page, last_page){
-		$.get("/comics/?index=" + start, function( data_comics ) { // HTML response
+		$.get("/ubooquity/comics/?index=" + start, function( data_comics ) { // HTML response
 			//console.log(data_comics);
 			Reading.comics = data_comics; // just for the debug console
 			$(data_comics).find(".cellcontainer img").each(function( index ) { // get all the comics numbers
@@ -3546,13 +3546,13 @@ Reading.mark = [];
 			if(start < last_page)
 				getComicsPage(start + comics_per_page, comics_per_page, last_page);
 			else {
-				$.post( "/comics/?settings=true&grouping=folder&sortingCriterion=date&sortingOrder=asc", function() {
+				$.post( "/ubooquity/comics/?settings=true&grouping=folder&sortingCriterion=date&sortingOrder=asc", function() {
 					console.log("->folder"); // reverse change to FOLDER
 				});
 			}
 		});
 	}
-	
+
 	function isReading(){ // get all comics with bookmark > 0
 		var status = window.location.search.match(/[a-z|-]+/g)[0]; // extract the status out of the url. reading / want-to-read / readd
 		if(Reading.bookmarkedComicsListPosition){ // we use the cached comics list instead of scanning the entire Ubooquity database for quickness reason (it's a sort of cache)
@@ -3560,7 +3560,7 @@ Reading.mark = [];
 		} else { // scan all database index (could be very long, depending of the database size. For me 15sec for 1500 comics)
 			Reading.book_number ++;
 		}
-		var json_url = window.location.origin + "/user-api/bookmark?docId=" + Reading.book_number;
+		var json_url = window.location.origin + "/ubooquity/user-api/bookmark?docId=" + Reading.book_number;
 		//console.log("url: "+json_url);
 		$("div[title*='loading'] .number").html("<div>DB index " + Reading.book_number + "</div><div>El. time " + Math.round((Date.now() - Reading.start)/1000) + " sec</div>");
 		$.getJSON( json_url, function() { // Ubooquity Webservice "Bookmark"
@@ -3571,7 +3571,7 @@ Reading.mark = [];
 				Reading.mark[data_bookmark.docId * 1] = data_bookmark.mark * 1; // *1 to cast to int
 				if(data_bookmark.mark * 1 > 0){
 					//console.log(data_bookmark);
-					var html_url = window.location.origin + "/comicdetails/" + data_bookmark.docId;
+					var html_url = window.location.origin + "/ubooquity/comicdetails/" + data_bookmark.docId;
 					//console.log(html_url);
 					$.get(html_url, function( data_comicdetails ) { // Ubooquity Webservice "comicdetails"
 					// Response ok only if the comic still exists  (in case of "clear comics database" done by the owner)
@@ -3588,15 +3588,15 @@ Reading.mark = [];
 						}
 						// Displays comics the owner is reading
 						if(status == 'reading' && mark < nb_of_pages - 1 && mark > 2){
-							$("<div class='cellcontainer'><div class='cell'><div class='thumb'><a href='#' onclick='showHidePopupMenu(\"comicdetails\",\"searchbox\",\"pageselector\",\"settingsbox\");loadComicDetails(" + book_number + ",\"/\");return false;'><img src='/comics/" + book_number + "/?cover=true'></a><div class='numberblock reading' style='background-color:rgba(0,0,0,.7); line-height: normal;padding: unset;position: absolute;bottom: 0px;left: 0px;'><div style='bottom: 0px;padding-left: 0px;width: " + Math.round((mark+1) / nb_of_pages * 100) + "%;height: 17px;left: 0px;background: rgba(204, 123, 25, 1);'></div><span style='position: absolute;left: 0px;width: 100%;bottom: 0px;'>" + (mark+1) + " of " + nb_of_pages + "</span></div></div><div class='label'>" + book_name + "</div></div></div>").insertBefore("div[title*='loading']");
-						}	
+							$("<div class='cellcontainer'><div class='cell'><div class='thumb'><a href='#' onclick='showHidePopupMenu(\"comicdetails\",\"searchbox\",\"pageselector\",\"settingsbox\");loadComicDetails(" + book_number + ",\"/ubooquity/\");return false;'><img src='/ubooquity/comics/" + book_number + "/?cover=true'></a><div class='numberblock reading' style='background-color:rgba(0,0,0,.7); line-height: normal;padding: unset;position: absolute;bottom: 0px;left: 0px;'><div style='bottom: 0px;padding-left: 0px;width: " + Math.round((mark+1) / nb_of_pages * 100) + "%;height: 17px;left: 0px;background: rgba(204, 123, 25, 1);'></div><span style='position: absolute;left: 0px;width: 100%;bottom: 0px;'>" + (mark+1) + " of " + nb_of_pages + "</span></div></div><div class='label'>" + book_name + "</div></div></div>").insertBefore("div[title*='loading']");
+						}
 						// Displays comics the owner wants to read (mark should be at page 2)
 						if(status == 'want-to-read' && mark < 3){
-							$("<div class='cellcontainer'><div class='cell'><div class='thumb'><a href='#' onclick='showHidePopupMenu(\"comicdetails\",\"searchbox\",\"pageselector\",\"settingsbox\");loadComicDetails(" + book_number + ",\"/\");return false;'><img src='/comics/" + book_number + "/?cover=true'></a><div class='numberblock reading'><div class='number'><span>want to read</span></div></div></div><div class='label'>" + book_name + "</div></div></div>").insertBefore("div[title*='loading']");
+							$("<div class='cellcontainer'><div class='cell'><div class='thumb'><a href='#' onclick='showHidePopupMenu(\"comicdetails\",\"searchbox\",\"pageselector\",\"settingsbox\");loadComicDetails(" + book_number + ",\"/ubooquity/\");return false;'><img src='/ubooquity/comics/" + book_number + "/?cover=true'></a><div class='numberblock reading'><div class='number'><span>want to read</span></div></div></div><div class='label'>" + book_name + "</div></div></div>").insertBefore("div[title*='loading']");
 						}
 						// Displays comics read (Reading.mark should be at the last book page)
 						if(status == 'readd' && mark >= nb_of_pages - 1){
-							$("<div class='cellcontainer'><div class='cell'><div class='thumb'><a href='#' onclick='showHidePopupMenu(\"comicdetails\",\"searchbox\",\"pageselector\",\"settingsbox\");loadComicDetails(" + book_number + ",\"/\");return false;'><img src='/comics/" + book_number + "/?cover=true'></a><div class='numberblock reading'><div class='number'><span>read</span></div></div></div><div class='label'>" + book_name + "</div></div></div>").insertBefore("div[title*='loading']");
+							$("<div class='cellcontainer'><div class='cell'><div class='thumb'><a href='#' onclick='showHidePopupMenu(\"comicdetails\",\"searchbox\",\"pageselector\",\"settingsbox\");loadComicDetails(" + book_number + ",\"/ubooquity/\");return false;'><img src='/ubooquity/comics/" + book_number + "/?cover=true'></a><div class='numberblock reading'><div class='number'><span>read</span></div></div></div><div class='label'>" + book_name + "</div></div></div>").insertBefore("div[title*='loading']");
 						}
 					});
 				}
@@ -3618,7 +3618,7 @@ Reading.mark = [];
 				isReading();
 			}
 		});
-		
+
 	}
     // Start polling...
     checkReady(function($) {
@@ -3648,7 +3648,7 @@ Reading.mark = [];
 		$("#pagination_top").css("display","visible");
 		$("#pagination_bottom").css("display","visible");
 	}
-	    
+
         //////////////////////////////////
         //Add currently reading condition to comic
         //////////////////////////////////
@@ -3662,7 +3662,7 @@ Reading.mark = [];
             //console.log("raw_src: "+raw_src);
           } else {
           //extract Comic ID
-            thing = $(this);          
+            thing = $(this);
 			src = $(this).attr('src');
 			// START of the de-duplicator (excepted line "last_book_name..." above)
 				var book_file_format = src.slice(src.lastIndexOf(".")+1, src.lastIndexOf("?")); // CBZ, CBR and PDF or of the book : EPUB, MOBI, AZW, PDF and DJVU
@@ -3686,14 +3686,14 @@ Reading.mark = [];
             var comicid = src.split('/');
             console.log("Comic ID: "+comicid[2]);
             //get comic meta from server
-            json_url = window.location.origin+"/user-api/bookmark?docId="+comicid[2];
+            json_url = window.location.origin+"/ubooquity/user-api/bookmark?docId="+comicid[2];
             console.log("url: "+json_url);
-		  
+
 	    //Check cookie settings for clickng books and set to open book directly or show popup
 	    var my_cookie = document.cookie;
 	    if (my_cookie.match('(^|;) ?' + "clickbook" + '=([^;]*)(;|$)') != null){
 		if  (my_cookie.match('(^|;) ?' + "clickbook" + '=([^;]*)(;|$)')[2] == "open"){
-			var html_url = window.location.origin + "/comicdetails/" + comicid[2];
+			var html_url = window.location.origin + "/ubooquity/comicdetails/" + comicid[2];
 			$.get(html_url, function( data_comicdetails ) {
 				var total_pages = $(data_comicdetails).find("#details_size").text().split("page")[0] * 1;
 				$("img[src*='"+comicid[2]+"']").parent().prop("href","/comicreader/reader.html#?docId=" + comicid[2] + "&startIndex=0&type=comic&nbPages=" + total_pages + "&storeBookmarksInCookies=false");
@@ -3717,9 +3717,9 @@ Reading.mark = [];
                         $("img[src*='"+c_id+"']").closest('.thumb').find('.number').html("want to read");
                         $("img[src*='"+c_id+"']").closest('.thumb').find('.numberblock').addClass("reading");
                       } else {
-						if (page_num != '0'){ // case readd or reading but we don't know the total number of pages of this comic 
+						if (page_num != '0'){ // case readd or reading but we don't know the total number of pages of this comic
 							Reading.mark[c_id] = page_num * 1 + 1; // save bookmark
-							var html_url = window.location.origin + "/comicdetails/" + c_id;
+							var html_url = window.location.origin + "/ubooquity/comicdetails/" + c_id;
 							$.get(html_url, function( data_comicdetails ) { // Ubooquity Webservice "comicdetails"
 								let book_number = data_comicdetails.slice(data_comicdetails.indexOf("/comics/")+8,);
 								book_number = book_number.slice(0,book_number.indexOf("/"));
@@ -3753,7 +3753,7 @@ Reading.mark = [];
 			$(".rootlink").hide(); //clear all folders from page
 			$(".cellcontainer").hide(); // clear all comics from page
 			$(".pagination").hide(); // hide page navigation down the page
-			$('#group').append("<div class='cellcontainer' title='loading'><div class='cell'><div class='thumb'><img src='/theme/loading.gif' /><div class='numberblock'><div class='number'><span></span></div></div></div>"); // Add a "loading" indicator
+			$('#group').append("<div class='cellcontainer' title='loading'><div class='cell'><div class='thumb'><img src='/ubooquity/theme/loading.gif' /><div class='numberblock'><div class='number'><span></span></div></div></div>"); // Add a "loading" indicator
 			Reading.start = Date.now(); // start the chrono
 			if(window.location.search.includes('nocache')){
 				localStorage.removeItem('Reading-bookmarkedComicsList'); // clear cached bookmarked comics list
@@ -3763,7 +3763,7 @@ Reading.mark = [];
 				// This process consist of scanning only the comics in the cached list (on a particular device only, not on the server)
 				Reading.bookmarkedComicsList = localStorage.getItem('Reading-bookmarkedComicsList').split(";"); // get cached comics list
 				Reading.bookmarkedComicsListPosition = 1;
-				
+
 				$("#group").prepend("<div>List calculated " + timeDistance(Date.now(),localStorage.getItem('Reading-bookmarkedComicsList-date')) + " ago. <a href='" + window.location.href + "&nocache'>Update ?</a> (Last time, it took " + localStorage.getItem('Reading-bookmarkedComicsList-buildingTime') + "s)</div>");
 				if(Reading.bookmarkedComicsList.length < 3){ // case : no bookmarks at all (new library, rebuild...)
 					//$("#group").append("<div>No bookmark for the moment</div>");
@@ -3777,12 +3777,12 @@ Reading.mark = [];
 					delete Reading.bookmarkedComicsListPosition;
 				}
 				// This process consist of scanning the *whole* Ubooquity database comic by comic (at least one request by comic) because theres no Ubooquity webservice to get the list of bookmarked comics. Time consuming but efficient.
-				
+
 				// Look for the first & last comic index in the Ubooquity database by parsing first & last comic webpage (in flat list, sorted by date)
-				$.post( "/comics/?settings=true&grouping=flat&sortingCriterion=date&sortingOrder=asc", function() {
+				$.post( "/ubooquity/comics/?settings=true&grouping=flat&sortingCriterion=date&sortingOrder=asc", function() {
 					console.log("->flat"); // Change settings to FLAT to be able to get all comics numbers easily
-					
-					$.get("/comics/", function( data_comics ) { // 1st comic page
+
+					$.get("/ubooquity/comics/", function( data_comics ) { // 1st comic page
 						//console.log(data_comics);
 						Reading.comics = data_comics; // just for the debug console
 						var img_url = $(data_comics).find(".cellcontainer img").attr("src"); // thumb img url of 1st comic number in the DB
@@ -3792,7 +3792,7 @@ Reading.mark = [];
 						Reading.book_number = book_number * 1 - 1; // 1st comic number in the DB (integer)
 						var last_comics_page = $(data_comics).find(".pagenumber").last().attr("href");
 						//console.log(document.cookie.match('(^|;) ?' + "ComicSettings" + '=([^;]*)(;|$)')[2]);
-						$.get(window.location.origin+"/comics/"+last_comics_page, function( data_comics ) { // last comic page
+						$.get(window.location.origin+"/ubooquity/comics/"+last_comics_page, function( data_comics ) { // last comic page
 							var img_url = $(data_comics).find(".cellcontainer img").last().attr("src"); // thumb img url of last comic number in the DB
 							console.log("img_url : " + img_url);
 							var last_comic_index = img_url.slice(img_url.indexOf("/comics/")+8,);
@@ -3803,8 +3803,8 @@ Reading.mark = [];
 								alert('Error. Please rebuild your Ubooquity database ("clear comics database" in the admin)');
 								return;
 							}
-								
-							$.post( "/comics/?settings=true&grouping=folder&sortingCriterion=date&sortingOrder=asc", function() {
+
+							$.post( "/ubooquity/comics/?settings=true&grouping=folder&sortingCriterion=date&sortingOrder=asc", function() {
 								console.log("->folder"); // reverse settings to FOLDER
 							});
 							// With the first and last number we can fetch the status of all comics in the DB
@@ -3817,7 +3817,7 @@ Reading.mark = [];
 				});
 			}
 		} else { // If normal page (not the 3 buttons)
-			// add a link on every comic title. I use it to get french reviews 
+			// add a link on every comic title. I use it to get french reviews
 			$('.label').each(function(){$(this).html("<a href=\"https://www.google.fr/search?q=site:https://www.bedetheque.com/ " + $(this).html() + "\" target=\"_blank\" style=\"color:white\">" + $(this).html() + "</a>")})
 		}
     });
