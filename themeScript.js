@@ -3685,6 +3685,7 @@ Reading.mark = [];
             $(this).closest('.thumb').append('<div class="numberblock"><div class="number"><span></span></div></div>');
             var comicid = src.split('/');
             console.log("Comic ID: "+comicid[2]);
+            if (comicid[2] === "comics") return
             //get comic meta from server
             json_url = window.location.origin+"/ubooquity/user-api/bookmark?docId="+comicid[2];
             console.log("url: "+json_url);
